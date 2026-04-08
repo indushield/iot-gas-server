@@ -5,7 +5,7 @@ const twilio = require("twilio");
 const app = express();
 app.use(bodyParser.json());
 
-// ✅ ENV (SAFE)
+// ✅ ENV VARIABLES
 const accountSid = process.env.TWILIO_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 
@@ -18,7 +18,7 @@ console.log("✅ Twilio Ready");
 console.log("⚠ Twilio ENV missing");
 }
 
-// ✅ TEST ROUTE (VERY IMPORTANT)
+// ✅ TEST ROUTE
 app.get("/", (req, res) => {
 res.send("Server Running ✅");
 });
@@ -30,18 +30,18 @@ temperature: 0,
 humidity: 0
 };
 
-// ✅ ESP SENDS HERE
+// ✅ ESP SENDS DATA HERE
 app.post("/update", (req, res) => {
 latestData = req.body;
 res.send("Data received");
 });
 
-// ✅ WEBSITE FETCHES HERE
+// ✅ WEBSITE FETCHES DATA HERE
 app.get("/data", (req, res) => {
 res.json(latestData);
 });
 
-// ✅ ALERT CALL
+// ✅ ALERT ROUTE (FIXED STRING ERROR)
 app.post("/alert", async (req, res) => {
 if (!client) {
 return res.status(500).send("Twilio not configured");
@@ -56,11 +56,12 @@ if (gasHigh) message += "Gas level is high. ";
 if (tempHigh) message += "Temperature is high. ";
 if (humHigh) message += "Humidity is high. ";
 
-message += `Gas ${gas}, Temperature ${temperature}, Humidity ${humidity}`;
+// ✅ FIXED (NO BACKTICK ERROR)
+message += "Gas " + gas + ", Temperature " + temperature + ", Humidity " + humidity;
 
 try {
     await client.calls.create({
-        twiml: `<Response><Say voice="alice">${message}</Say></Response>`,
+        twiml: "<Response><Say voice='alice'>" + message + "</Say></Response>",
         to: "+918919306277",        // YOUR NUMBER
         from: "+17405548802"        // YOUR TWILIO NUMBER
     });
