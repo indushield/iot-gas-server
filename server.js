@@ -27,7 +27,7 @@ try {
     await client.calls.create({
         twiml: `<Response><Say voice="alice">${message}</Say></Response>`,
         to: "+918919306277",
-        from: "YOUR_TWILIO_NUMBER"
+        from: "+17405548802"
     });
 
     res.send("Call triggered");
