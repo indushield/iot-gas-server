@@ -1,28 +1,42 @@
 const express = require("express");
-const cors = require("cors");
+const bodyParser = require("body-parser");
+const twilio = require("twilio");
 
 const app = express();
+app.use(bodyParser.json());
 
-app.use(cors());
-app.use(express.json());
+const accountSid = "YOUR_TWILIO_SID";
+const authToken = "YOUR_TWILIO_AUTH_TOKEN";
 
-// store latest values
-let sensorData = {
-  temperature: 0,
-  humidity: 0,
-  gas: 0
-};
+const client = twilio(accountSid, authToken);
 
-// ESP32 sends here
-app.post("/update", (req, res) => {
-  sensorData = req.body;
-  console.log("📥 Data received:", sensorData);
-  res.send("OK");
+// ALERT ROUTE
+app.post("/alert", async (req, res) => {
+const { gasHigh, tempHigh, humHigh, gas, temperature, humidity } = req.body;
+
+```
+let message = "Warning! ";
+
+if (gasHigh) message += "Gas level is high. ";
+if (tempHigh) message += "Temperature is high. ";
+if (humHigh) message += "Humidity is high. ";
+
+message += `Values are Gas ${gas}, Temp ${temperature}, Humidity ${humidity}`;
+
+try {
+    await client.calls.create({
+        twiml: `<Response><Say voice="alice">${message}</Say></Response>`,
+        to: "+918919306277",
+        from: "YOUR_TWILIO_NUMBER"
+    });
+
+    res.send("Call triggered");
+} catch (err) {
+    console.log(err);
+    res.status(500).send("Error");
+}
+```
+
 });
 
-// Website fetches here
-app.get("/data", (req, res) => {
-  res.json(sensorData);
-});
-
-app.listen(3000, () => console.log("🚀 Server running on port 3000"));
+app.listen(3000, () => console.log("Server running"));
